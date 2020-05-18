@@ -7,7 +7,7 @@ xmax = width * 8;
 //We have to do manual dragging
 dragging = false;
 
-//User can "zoom out" to see the full map, or in to see the local view.  Currently disabled,  fires incorrectly after planet selection  FIXME
+//User can "zoom out" to see the full map, or in to see the local view.
 viewscale = 2;
 overview=false;
 
@@ -18,7 +18,7 @@ planet=[1,2,3,4,5,6,7,8,9,10];
 resources=[1,2,3,4,5,6,7,8,9,10];
 
 //Name, flag colour
-player=[["Neutral", #000000], ["Bob", #FF0000], ["Tom", #009900], ["Harry", #0000FF]  ];
+player=[["Neutral", #AAAAAA], ["Bob", #FF0000], ["Tom", #009900], ["Harry", #0000FF]  ];
 
 
 X = 20;
@@ -27,6 +27,7 @@ offSetX=0;
 offSetY=0;
 swirlie = new Swirlie();
 
+//The currently selected move target
 PlanetX = 200;
 PlanetY = 200;
 
@@ -76,191 +77,12 @@ if(!overview){
 	}
 }
 
-void drawText(astring, xpos, ypos){
-	if(!overview){
-	text(astring, xpos, ypos);
-	}
-}
-
-//Vector commands for ship
-void drawShip(x,y,shipnum)
-	{
-		pushMatrix();
-		//deltax = 1*sign(destx-x);
-		//deltay = 1*sign(desty-y);
-		//x=x+deltax;
-		//y=y+deltay;
-		translate(-5, 5);
-		translate(x,y);
-		if(closeTo(x,y,PlanetX,PlanetY,50)){
-			scale(0.5);
-		}
-		noFill();
-		stroke(255);
-		strokeWeight(1);
-		fill(player[ship[shipnum][1]][1] );
-		if(overview){
-		rect(0, 0, 10, -21);}
-		else{
-		rect(0, 0, 10, -21);
-		noFill();
-		triangle(0-2,0,0-10,0,0-2,0-10);
-		triangle(0+12,0,0+20,0,0+12,0-10);
-		line(0,0+3,0,0+10);
-		line(0+5,0+3,0+5,0+10);
-		line(0+10,0+3,0+10,0+10);
-		if(!closeTo(x,y,PlanetX,PlanetY)){
-		fill(200)
-			xpos = int(0)+25;
-		ypos = int(0)+20;
-		drawOutlineText(ship[shipnum][0] + " ("+ship[shipnum][1]+ ")", xpos, ypos);
-		fill(200)
-		drawText(ship[shipnum][0] + " (" + player[ship[shipnum][1]][0] + ")" , xpos, ypos);
-		}
-		}
-		popMatrix();
-	}
-
-//Vector commands to draw star
-void drawPlanet(x, y, name, owner)
-{
-	pushMatrix();
-	translate(x,y);
-	stroke(255);
-	strokeWeight(1);
-	xpos = 25;
-	ypos = 20;
-	pushMatrix();
-	translate(xpos, ypos);
-	//scale(0.5);
-	drawOutlineText(name, 0, 0);
-	fill(200)
-	drawText(name, 0, 0);
-	popMatrix();
-	if(owner == "PLAYERNAME"){ fill(50,200,50);}
-	else {fill(200,50,50);}
-	fill(player[owner][1]);
-	line(0,0,xpos,ypos+5);
-	line(xpos,ypos+5,xpos+50,ypos+5);
-	ellipse(0, 0, 10, 10);
-	for (i=0; i<9; i++)
-	{
-		rotate(40*PI/180);
-		triangle(-2, 9, 2, 9, 0, 15);
-	}
-	popMatrix();
-}
 
 
 function moveCost(a_number) {
 	return int(a_number/10);
 }
 
-//Draw a bright red arrow to the ship's destination
-void drawArrow(x,y,destx,desty,owner,bp_cost)
-	{
-		pushMatrix();
-		strokeWeight(1);
-		translate(x,y);
-		//The line around the fleet name
-		line(0,0,20,28);
-		line(20,28,75,28);
-		len = sqrt(sq(x-destx) + sq (y-desty));
-		if(len>30){
-			float a = atan2(y-desty, x-destx);
-			if (owner == "PLAYERNAME")
-			{ fill(70, 255, 70);}
-			else {fill(255,70,70);}
-			fill(player[owner][1]);
-			//line(0,0,destx-x,desty-y);
-			//Rotate to point to the destination
-			rotate(a+PI/2);
-			//Draw a nice thick line and arrow to the destination
-			rect(-10, 0, 20, len-15);
-			triangle(-15, len-15, 15, len-15, 0, len);
-			//Put a circle around the ship
-			ellipse(0,0,40,40);
-			text(" "+moveCost(len), 0, len);
-			//text(bp_cost+" ("+owner+")", xpos, ypos);
-		}
-		popMatrix();
-	}
-//Clear the canvas
-void Clear() { fill(0);rect(0,0,xmax,ymax);}
-
-void draw(){  
-		pushMatrix();
-		Clear();
-		scale(viewscale/2);
-		
-		//The default ship bounces from planet to planet
-		if (true) {  // or "if (focused == true)"
-	
-	
-			if(closeTo(X,Y,PlanetX,PlanetY, 30)){
-			//Pick a new planet
-			var p = int(Math.random()*10);
-			PlanetX = planet[p][0];
-			PlanetY = planet[p][1];
-		}
-		
-	
-	
-			if(selected_ship>-1){
-			drawArrow(offSetX+X,offSetY+Y,offSetX+PlanetX,offSetY+PlanetY, 1, "250");
-			}
-			swirlie.moveTo(offSetX+PlanetX,offSetY+PlanetY);
-			swirlie.redraw();
-			var i=0;
-			for(i=0;i<10;i++) {
-					var pdata = planet[i];
-					drawPlanet(offSetX+pdata[0],offSetY+pdata[1],pdata[3], pdata[2]);
-			}
-			var ratio = min(Math.abs(X-PlanetX)/Math.abs(Y-PlanetY), 10);
-			var inv_ratio = min(10, 1/ratio);
-			X=X+-ratio*(X-PlanetX)/Math.abs(X-PlanetX);
-			Y=Y+-inv_ratio*(Y-PlanetY)/Math.abs(Y-PlanetY);
-			drawShip(offSetX+X,offSetY+Y,0 );
-
-			for(i=0;i<10;i++) {
-			var xx =shipPos[i][0];
-			var yy =shipPos[i][1];
-			var destx =shipPos[i][2];
-			var desty =shipPos[i][3];
-				if(closeTo(xx,yy,destx,desty, 30)){
-				//Pick a new planet
-				var p = int(Math.random()*10);
-				shipPos[i][2] = planet[p][0];
-				shipPos[i][3] = planet[p][1];
-				}
-
-			var ratio = min(Math.abs(xx-destx)/Math.abs(yy-desty), 10);
-			var inv_ratio = min(10, 1/ratio);
-			shipPos[i][0]=xx+-ratio*(xx-destx)/Math.abs(xx-destx);
-			shipPos[i][1]=yy+-inv_ratio*(yy-desty)/Math.abs(yy-desty);
-				drawShip(offSetX+shipPos[i][0],offSetY+shipPos[i][1],i );
-			}
-			
-			if (swirlie.selected) {
-				for (i=0;i<resources.length;i++) {
-					console.log(swirlie.selected);
-					console.log(i);
-					handlebox.setBar(i, int(resources[swirlie.selected][i]));
-				}
-				handlebox.setPos(swirlie.x+offSetX, swirlie.y+offSetY);
-				handlebox.redraw();
-			}
-		
-
-			//if(X>200 || Y>200){X=20;Y=20;playSound();}
-	
-
-		} else {
-		line(0, 0, 100, 100);
-		line(100, 0, 0, 100);
-		}
-		popMatrix();
-	}
 
 //Are two points within dist of each other?
 boolean closeTo(x1,y1,x2,y2,dist) {
@@ -271,6 +93,9 @@ boolean closeTo(x1,y1,x2,y2,dist) {
 }
 
 void mouseClicked() {
+ if (mouseButton == RIGHT) { 
+ toggleOverview();
+} else {
 	console.log("mouseclick at "+mouseX + "," + mouseY);
 	var selected=false;
 	deselect();
@@ -295,9 +120,8 @@ void mouseClicked() {
 // 					if(Math.abs(X-(mouseX-offSetX)) < 15){
 // 							if(Math.abs(Y-(mouseY-offSetY)) < 15){
 // 								selected_ship=0; selected=true;} } }
-// 		//if((selected==false)&&(dragging==false)) { toggleOverview();}
-	
-	dragging = false;
+//if((selected==false)&&(dragging==false)) { toggleOverview();}
+}agging = false;
 }
 
 void mouseDragged() 
@@ -525,9 +349,196 @@ class Handle
 }
 
 
+//Draw shapes
+
+//Draw a bright red arrow to the ship's destination
+void drawArrow(x,y,destx,desty,owner,bp_cost)
+	{
+		pushMatrix();
+		strokeWeight(1);
+		translate(x,y);
+		//The line around the fleet name
+		line(0,0,20,28);
+		line(20,28,75,28);
+		len = sqrt(sq(x-destx) + sq (y-desty))-20;
+		if(len>30){
+			float a = atan2(y-desty, x-destx);
+			if (owner == "PLAYERNAME")
+			{ fill(70, 255, 70);stroke(70, 255, 70);}
+			else {fill(255,70,70);stroke(255,70,70);}
+			fill(player[owner][1]);
+			//line(0,0,destx-x,desty-y);
+			
+			//Rotate to point to the destination
+			rotate(a+PI/2);
+			//Draw a nice thick line and arrow to the destination
+			rect(-10, 0, 20, len-15);
+			triangle(-15, len-15, 15, len-15, 0, len);
+			//Put a circle around the ship
+			ellipse(0,0,40,40);
+			text(" "+moveCost(len), 0, len);
+			//text(bp_cost+" ("+owner+")", xpos, ypos);
+		}
+		popMatrix();
+	}
+//Clear the canvas
+void Clear() { fill(0);rect(0,0,xmax,ymax);}
+
+void draw(){  
+		pushMatrix();
+		Clear();
+		scale(viewscale/2);
+		
+		//The default ship bounces from planet to planet
+		if (true) {  // or "if (focused == true)"
+	
+	
+			if(closeTo(X,Y,PlanetX,PlanetY, 30)){
+			//Pick a new planet
+			var p = int(Math.random()*10);
+			PlanetX = planet[p][0];
+			PlanetY = planet[p][1];
+		}
+		
+	
+	
+			if(selected_ship>-1){
+			drawArrow(offSetX+X,offSetY+Y,offSetX+PlanetX,offSetY+PlanetY, 1, "250");
+			}
+			swirlie.moveTo(offSetX+PlanetX,offSetY+PlanetY);
+			swirlie.redraw();
+			var i=0;
+			for(i=0;i<10;i++) {
+					var pdata = planet[i];
+					drawPlanet(offSetX+pdata[0],offSetY+pdata[1],pdata[3], pdata[2]);
+			}
+			var ratio = min(Math.abs(X-PlanetX)/Math.abs(Y-PlanetY), 10);
+			var inv_ratio = min(10, 1/ratio);
+			X=X+-ratio*(X-PlanetX)/Math.abs(X-PlanetX);
+			Y=Y+-inv_ratio*(Y-PlanetY)/Math.abs(Y-PlanetY);
+			drawShip(offSetX+X,offSetY+Y,0 );
+
+			for(i=0;i<10;i++) {
+			var xx =shipPos[i][0];
+			var yy =shipPos[i][1];
+			var destx =shipPos[i][2];
+			var desty =shipPos[i][3];
+				if(closeTo(xx,yy,destx,desty, 30)){
+				//Pick a new planet
+				var p = int(Math.random()*10);
+				shipPos[i][2] = planet[p][0];
+				shipPos[i][3] = planet[p][1];
+				}
+
+			var ratio = min(Math.abs(xx-destx)/Math.abs(yy-desty), 10)/10.0;
+			var inv_ratio = min(10, 1/ratio)/10.0;
+			shipPos[i][0]=xx+-ratio*(xx-destx)/Math.abs(xx-destx);
+			shipPos[i][1]=yy+-inv_ratio*(yy-desty)/Math.abs(yy-desty);
+				drawShip(offSetX+shipPos[i][0],offSetY+shipPos[i][1],i );
+			}
+			
+			if (swirlie.selected) {
+				for (i=0;i<resources.length;i++) {
+					console.log(swirlie.selected);
+					console.log(i);
+					handlebox.setBar(i, int(resources[swirlie.selected][i]));
+				}
+				handlebox.setPos(swirlie.x+offSetX, swirlie.y+offSetY);
+				handlebox.redraw();
+			}
+		
+
+			//if(X>200 || Y>200){X=20;Y=20;playSound();}
+	
+
+		} else {
+		line(0, 0, 100, 100);
+		line(100, 0, 0, 100);
+		}
+		popMatrix();
+	}
 
 
 
+void drawText(astring, xpos, ypos){
+	if(!overview){
+	text(astring, xpos, ypos);
+	}
+}
+
+//Vector commands for ship
+void drawShip(x,y,shipnum)
+	{
+		pushMatrix();
+		//deltax = 1*sign(destx-x);
+		//deltay = 1*sign(desty-y);
+		//x=x+deltax;
+		//y=y+deltay;
+		translate(-5, 5);
+		translate(x,y);
+		if(closeTo(x,y,PlanetX,PlanetY,50)){
+			scale(0.5);
+		}
+		//Body
+		noFill();
+		stroke(player[ship[shipnum][1]][1]);
+		strokeWeight(1);
+		fill(player[ship[shipnum][1]][1] );
+		if(overview){
+		rect(0, 0, 10, -21);}
+		else{
+		rect(0, 0, 10, -21);
+		//Wings
+		//noFill();
+		//stroke(255);
+		triangle(0-2,0,0-10,0,0-2,0-10);
+		triangle(0+12,0,0+20,0,0+12,0-10);
+		//Exhaust
+		line(0,0+3,0,0+10);
+		line(0+5,0+3,0+5,0+10);
+		line(0+10,0+3,0+10,0+10);
+		if(!closeTo(x,y,PlanetX,PlanetY)){
+		fill(200)
+			xpos = int(0)+25;
+		ypos = int(0)+20;
+		drawOutlineText(ship[shipnum][0] + " ("+ship[shipnum][1]+ ")", xpos, ypos);
+		fill(200)
+		drawText(ship[shipnum][0] + " (" + player[ship[shipnum][1]][0] + ")" , xpos, ypos);
+		}
+		}
+		popMatrix();
+	}
+
+//Vector commands to draw star
+void drawPlanet(x, y, name, owner)
+{
+	pushMatrix();
+	translate(x,y);
+	stroke(255);
+	strokeWeight(1);
+	xpos = 25;
+	ypos = 20;
+	pushMatrix();
+	translate(xpos, ypos);
+	//scale(0.5);
+	drawOutlineText(name, 0, 0);
+	fill(200)
+	drawText(name, 0, 0);
+	popMatrix();
+	if(owner == "PLAYERNAME"){ fill(50,200,50);}
+	else {fill(200,50,50);}
+	fill(player[owner][1]);
+	stroke(player[owner][1]);
+	line(0,0,xpos,ypos+5);
+	line(xpos,ypos+5,xpos+50,ypos+5);
+	ellipse(0, 0, 10, 10);
+	for (i=0; i<9; i++)
+	{
+		rotate(40*PI/180);
+		triangle(-2, 9, 2, 9, 0, 15);
+	}
+	popMatrix();
+}
 
 
 

@@ -1,5 +1,5 @@
 
-//forcToTop doesn't always fire correctly if we call it from onLoad(), so we try multiple times after loading.  This should hide the address bar on mobile devices.
+//forceToTop doesn't always fire correctly if we call it from onLoad(), so we try multiple times after loading.  This should hide the address bar on mobile devices.
 var tries = 5;
 function forceToTop(){
 	window.scrollTo(0,1);
