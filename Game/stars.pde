@@ -408,17 +408,15 @@ void draw(){
 		
 		//The default ship bounces from planet to planet
 		if (true) {  // or "if (focused == true)"
-	
-	
-		if(closeTo(X,Y,PlanetX,PlanetY, 30)){
-			//Pick a new planet
-			var p = int(Math.random()*10);
-			PlanetX = planet[p][0];
-			PlanetY = planet[p][1];
-		}
+
+			if(closeTo(X,Y,PlanetX,PlanetY, 30)){
+				//Pick a new planet
+				var p = int(Math.random()*10);
+				PlanetX = planet[p][0];
+				PlanetY = planet[p][1];
+			}
 		
-	
-	
+
 			if(selected_ship>-1){
 				my x = offSetX+shipPos[selected_ship][0];
 				my y =offSetY+shipPos[selected_ship][1];
@@ -475,8 +473,8 @@ void draw(){
 	
 
 		} else {
-		line(0, 0, 100, 100);
-		line(100, 0, 0, 100);
+			line(0, 0, 100, 100);
+			line(100, 0, 0, 100);
 		}
 		popMatrix();
 	}
