@@ -356,12 +356,14 @@ class Handle
 //Draw a circle around the selected ship
 void drawHalo(x,y,destx,desty,owner)
 	{
+		my playerColour = player[owner][1];
 		pushMatrix();
-		strokeWeight(1);
+		strokeWeight(2);
+		stroke(playerColour);
 		translate(x,y);
 		//Put a circle around the ship
 		fill("#050505");
-		ellipse(0,0,40,40);
+		ellipse(-2,0,40,40);
 		popMatrix();
 	}
 
@@ -490,6 +492,7 @@ void drawText(astring, xpos, ypos){
 //Vector commands for ship
 void drawShip(x,y,shipnum, showDetails)
 	{
+		my playerColour = player[ship[shipnum][1]][1];
 		console.log("Drawing ship number ", shipnum);
 		pushMatrix();
 		//deltax = 1*sign(destx-x);
@@ -504,12 +507,13 @@ void drawShip(x,y,shipnum, showDetails)
 		//}
 		//Body
 		noFill();
-		stroke(player[ship[shipnum][1]][1]);
+		stroke(playerColour);
 		strokeWeight(1);
-		fill(player[ship[shipnum][1]][1] );
+		fill(playerColour);
 		if(overview){
 			rect(0, 0, 10, -21);
 		} else {
+			triangle(0,-21,5,-26,10,-21);
 			rect(0, 0, 10, -21);
 			//Wings
 			//noFill();
@@ -534,6 +538,8 @@ void drawShipDetail(shipnum) {
 	fill(0)
 	xpos = int(0)+25;
 	ypos = int(0)+20;
+	line(12.5,12.5,xpos,ypos+5);
+	line(xpos,ypos+5,xpos+50,ypos+5);
 	drawOutlineText(ship[shipnum][0] + " ("+ship[shipnum][1]+ ")", xpos, ypos);
 	fill(200)
 	drawText(ship[shipnum][0] + " (" + player[ship[shipnum][1]][0] + ")" , xpos, ypos);
@@ -541,8 +547,7 @@ void drawShipDetail(shipnum) {
 }
 
 //Vector commands to draw star
-void drawStar(x, y, name, owner)
-{
+void drawStar(x, y, name, owner) {
 	pushMatrix();
 	translate(x,y);
 	stroke(255);
@@ -556,11 +561,13 @@ void drawStar(x, y, name, owner)
 	fill(200)
 	drawText(name, 0, 0);
 	popMatrix();
-	if(owner == "PLAYERNAME"){ fill(50,200,50);}
-	else {fill(200,50,50);}
+	if(owner == "PLAYERNAME")
+		{fill(50,200,50);}
+	else 
+		{fill(200,50,50);}
 	fill(player[owner][1]);
 	stroke(player[owner][1]);
-	line(0,0,xpos,ypos+5);
+	line(11,11,xpos,ypos+5);
 	line(xpos,ypos+5,xpos+50,ypos+5);
 	ellipse(0, 0, 10, 10);
 	for (i=0; i<9; i++)
