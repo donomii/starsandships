@@ -93,35 +93,37 @@ boolean closeTo(x1,y1,x2,y2,dist) {
 }
 
 void mouseClicked() {
- if (mouseButton == RIGHT) { 
- toggleOverview();
-} else {
-	console.log("mouseclick at "+mouseX + "," + mouseY);
-	var selected=false;
-	deselect();
-	
-		for(i=0;i<10;i++)
-				{
-					my p = planet[i];
-					if(Math.abs(p[0]-(mouseX-offSetX)) < 15){
-							if(Math.abs(p[1]-(mouseY-offSetY)) < 15){
-								select_planet(i); selected=true;swirlie.visible=true;
-								console.log("planet " + i + " chosen");
-							} } }
-		if(selected==false) { deselect(); }
+	if (mouseButton == RIGHT) { 
+		toggleOverview();
+	} else {
+		console.log("mouseclick at "+mouseX + "," + mouseY);
+		var selected=false;
+		deselect();
+		
+			for(i=0;i<10;i++)
+					{
+						my p = planet[i];
+						if(Math.abs(p[0]-(mouseX-offSetX)) < 15){
+								if(Math.abs(p[1]-(mouseY-offSetY)) < 15){
+									select_planet(i); selected=true;swirlie.visible=true;
+									console.log("planet " + i + " chosen");
+								} } }
+			if(selected==false) { deselect(); }
 
-		PlanetX = mouseX-offSetX;
-		PlanetY = mouseY-offSetY;
-		selected_ship = -1;
-	//Currently ship selection is disabled
-// 		for(i=0;i<1;i++)
-// 				{
-// 					my p = planet[i];
-// 					if(Math.abs(X-(mouseX-offSetX)) < 15){
-// 							if(Math.abs(Y-(mouseY-offSetY)) < 15){
-// 								selected_ship=0; selected=true;} } }
-//if((selected==false)&&(dragging==false)) { toggleOverview();}
-}agging = false;
+			PlanetX = mouseX-offSetX;
+			PlanetY = mouseY-offSetY;
+			selected_ship = -1;
+			//Currently ship selection is disabled
+			for(i=0;i<10;i++)
+					{
+						my ship = shipPos[i];
+						if(Math.abs(ship[0]-(mouseX-offSetX)) < 15){
+								if(Math.abs(ship[1]-(mouseY-offSetY)) < 15){
+									selected_ship=i; selected=true;console.log("ship " + i + " chosen");} } }
+									
+			//if((selected==false)&&(dragging==false)) { toggleOverview();}
+	}
+	dragging = false;
 }
 
 void mouseDragged() 
@@ -351,6 +353,18 @@ class Handle
 
 //Draw shapes
 
+//Draw a circle around the selected ship
+void drawHalo(x,y,destx,desty,owner)
+	{
+		pushMatrix();
+		strokeWeight(1);
+		translate(x,y);
+		//Put a circle around the ship
+		fill("#050505");
+		ellipse(0,0,40,40);
+		popMatrix();
+	}
+
 //Draw a bright red arrow to the ship's destination
 void drawArrow(x,y,destx,desty,owner,bp_cost)
 	{
@@ -364,8 +378,9 @@ void drawArrow(x,y,destx,desty,owner,bp_cost)
 		if(len>30){
 			float a = atan2(y-desty, x-destx);
 			if (owner == "PLAYERNAME")
-			{ fill(70, 255, 70);stroke(70, 255, 70);}
-			else {fill(255,70,70);stroke(255,70,70);}
+				{ fill(70, 255, 70);stroke(70, 255, 70);}
+			else 
+				{fill(255,70,70);stroke(255,70,70);}
 			fill(player[owner][1]);
 			//line(0,0,destx-x,desty-y);
 			
@@ -393,7 +408,7 @@ void draw(){
 		if (true) {  // or "if (focused == true)"
 	
 	
-			if(closeTo(X,Y,PlanetX,PlanetY, 30)){
+		if(closeTo(X,Y,PlanetX,PlanetY, 30)){
 			//Pick a new planet
 			var p = int(Math.random()*10);
 			PlanetX = planet[p][0];
@@ -403,14 +418,19 @@ void draw(){
 	
 	
 			if(selected_ship>-1){
-			drawArrow(offSetX+X,offSetY+Y,offSetX+PlanetX,offSetY+PlanetY, 1, "250");
+				my x = offSetX+shipPos[selected_ship][0];
+				my y =offSetY+shipPos[selected_ship][1];
+				my destx = offSetX+PlanetX;
+				my desty = offSetY+PlanetY;
+				drawArrow(x,y,destx,desty, 1, "250");
+				drawHalo(x,y,destx,desty,ship[selected_ship][1])
 			}
 			swirlie.moveTo(offSetX+PlanetX,offSetY+PlanetY);
 			swirlie.redraw();
 			var i=0;
 			for(i=0;i<10;i++) {
-					var pdata = planet[i];
-					drawPlanet(offSetX+pdata[0],offSetY+pdata[1],pdata[3], pdata[2]);
+				var pdata = planet[i];
+				drawStar(offSetX+pdata[0],offSetY+pdata[1],pdata[3], pdata[2]);
 			}
 			var ratio = min(Math.abs(X-PlanetX)/Math.abs(Y-PlanetY), 10);
 			var inv_ratio = min(10, 1/ratio);
@@ -419,22 +439,22 @@ void draw(){
 			drawShip(offSetX+X,offSetY+Y,0 );
 
 			for(i=0;i<10;i++) {
-			var xx =shipPos[i][0];
-			var yy =shipPos[i][1];
-			var destx =shipPos[i][2];
-			var desty =shipPos[i][3];
+				var xx =shipPos[i][0];
+				var yy =shipPos[i][1];
+				var destx =shipPos[i][2];
+				var desty =shipPos[i][3];
 				if(closeTo(xx,yy,destx,desty, 30)){
-				//Pick a new planet
-				var p = int(Math.random()*10);
-				shipPos[i][2] = planet[p][0];
-				shipPos[i][3] = planet[p][1];
+					//Pick a new planet
+					var p = int(Math.random()*10);
+					shipPos[i][2] = planet[p][0];
+					shipPos[i][3] = planet[p][1];
 				}
 
-			var ratio = min(Math.abs(xx-destx)/Math.abs(yy-desty), 10)/10.0;
-			var inv_ratio = min(10, 1/ratio)/10.0;
-			shipPos[i][0]=xx+-ratio*(xx-destx)/Math.abs(xx-destx);
-			shipPos[i][1]=yy+-inv_ratio*(yy-desty)/Math.abs(yy-desty);
-				drawShip(offSetX+shipPos[i][0],offSetY+shipPos[i][1],i );
+				var ratio = min(Math.abs(xx-destx)/Math.abs(yy-desty), 10)/10.0;
+				var inv_ratio = min(10, 1/ratio)/10.0;
+				shipPos[i][0]=xx+-ratio*(xx-destx)/Math.abs(xx-destx);
+				shipPos[i][1]=yy+-inv_ratio*(yy-desty)/Math.abs(yy-desty);
+				drawShip(offSetX+shipPos[i][0],offSetY+shipPos[i][1],i);
 			}
 			
 			if (swirlie.selected) {
@@ -476,41 +496,42 @@ void drawShip(x,y,shipnum)
 		//y=y+deltay;
 		translate(-5, 5);
 		translate(x,y);
-		if(closeTo(x,y,PlanetX,PlanetY,50)){
-			scale(0.5);
-		}
+		scale(0.5);
+		//if(closeTo(x,y,PlanetX,PlanetY,50)){
+		//	scale(0.5);
+		//}
 		//Body
 		noFill();
 		stroke(player[ship[shipnum][1]][1]);
 		strokeWeight(1);
 		fill(player[ship[shipnum][1]][1] );
 		if(overview){
-		rect(0, 0, 10, -21);}
-		else{
-		rect(0, 0, 10, -21);
-		//Wings
-		//noFill();
-		//stroke(255);
-		triangle(0-2,0,0-10,0,0-2,0-10);
-		triangle(0+12,0,0+20,0,0+12,0-10);
-		//Exhaust
-		line(0,0+3,0,0+10);
-		line(0+5,0+3,0+5,0+10);
-		line(0+10,0+3,0+10,0+10);
-		if(!closeTo(x,y,PlanetX,PlanetY)){
-		fill(200)
-			xpos = int(0)+25;
-		ypos = int(0)+20;
-		drawOutlineText(ship[shipnum][0] + " ("+ship[shipnum][1]+ ")", xpos, ypos);
-		fill(200)
-		drawText(ship[shipnum][0] + " (" + player[ship[shipnum][1]][0] + ")" , xpos, ypos);
-		}
+			rect(0, 0, 10, -21);
+		} else {
+			rect(0, 0, 10, -21);
+			//Wings
+			//noFill();
+			//stroke(255);
+			triangle(0-2,0,0-10,0,0-2,0-10);
+			triangle(0+12,0,0+20,0,0+12,0-10);
+			//Exhaust
+			line(0,0+3,0,0+10);
+			line(0+5,0+3,0+5,0+10);
+			line(0+10,0+3,0+10,0+10);
+			if(!closeTo(x,y,PlanetX,PlanetY)){
+				fill(200)
+				xpos = int(0)+25;
+				ypos = int(0)+20;
+				//drawOutlineText(ship[shipnum][0] + " ("+ship[shipnum][1]+ ")", xpos, ypos);
+				fill(200)
+				//drawText(ship[shipnum][0] + " (" + player[ship[shipnum][1]][0] + ")" , xpos, ypos);
+			}
 		}
 		popMatrix();
 	}
 
 //Vector commands to draw star
-void drawPlanet(x, y, name, owner)
+void drawStar(x, y, name, owner)
 {
 	pushMatrix();
 	translate(x,y);
