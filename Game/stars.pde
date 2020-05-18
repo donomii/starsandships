@@ -422,8 +422,9 @@ void draw(){
 				my y =offSetY+shipPos[selected_ship][1];
 				my destx = offSetX+PlanetX;
 				my desty = offSetY+PlanetY;
-				drawArrow(x,y,destx,desty, 1, "250");
+				//drawArrow(x,y,destx,desty, 1, "250");
 				drawHalo(x,y,destx,desty,ship[selected_ship][1])
+				drawShip(x,y,selected_ship, true);
 			}
 			swirlie.moveTo(offSetX+PlanetX,offSetY+PlanetY);
 			swirlie.redraw();
@@ -436,7 +437,7 @@ void draw(){
 			var inv_ratio = min(10, 1/ratio);
 			X=X+-ratio*(X-PlanetX)/Math.abs(X-PlanetX);
 			Y=Y+-inv_ratio*(Y-PlanetY)/Math.abs(Y-PlanetY);
-			drawShip(offSetX+X,offSetY+Y,0 );
+			drawShip(offSetX+X,offSetY+Y,0, false );
 
 			for(i=0;i<10;i++) {
 				var xx =shipPos[i][0];
@@ -487,8 +488,9 @@ void drawText(astring, xpos, ypos){
 }
 
 //Vector commands for ship
-void drawShip(x,y,shipnum)
+void drawShip(x,y,shipnum, showDetails)
 	{
+		console.log("Drawing ship number ", shipnum);
 		pushMatrix();
 		//deltax = 1*sign(destx-x);
 		//deltay = 1*sign(desty-y);
@@ -518,17 +520,25 @@ void drawShip(x,y,shipnum)
 			line(0,0+3,0,0+10);
 			line(0+5,0+3,0+5,0+10);
 			line(0+10,0+3,0+10,0+10);
-			if(!closeTo(x,y,PlanetX,PlanetY)){
-				fill(200)
-				xpos = int(0)+25;
-				ypos = int(0)+20;
-				//drawOutlineText(ship[shipnum][0] + " ("+ship[shipnum][1]+ ")", xpos, ypos);
-				fill(200)
-				//drawText(ship[shipnum][0] + " (" + player[ship[shipnum][1]][0] + ")" , xpos, ypos);
+			//if(!closeTo(x,y,PlanetX,PlanetY)){
+			if (showDetails){
+				drawShipDetail(shipnum);
 			}
 		}
 		popMatrix();
 	}
+	
+void drawShipDetail(shipnum) {
+	pushMatrix();
+	scale(2.0);
+	fill(0)
+	xpos = int(0)+25;
+	ypos = int(0)+20;
+	drawOutlineText(ship[shipnum][0] + " ("+ship[shipnum][1]+ ")", xpos, ypos);
+	fill(200)
+	drawText(ship[shipnum][0] + " (" + player[ship[shipnum][1]][0] + ")" , xpos, ypos);
+	popMatrix();
+}
 
 //Vector commands to draw star
 void drawStar(x, y, name, owner)
