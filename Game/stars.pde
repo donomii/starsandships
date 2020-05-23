@@ -100,14 +100,14 @@ void mouseClicked() {
 		var selected=false;
 		deselect();
 		
-			for(i=0;i<10;i++)
-					{
-						my p = planet[i];
-						if(Math.abs(p[0]-(mouseX-offSetX)) < 15){
-								if(Math.abs(p[1]-(mouseY-offSetY)) < 15){
-									select_planet(i); selected=true;swirlie.visible=true;
-									console.log("planet " + i + " chosen");
-								} } }
+			for(i=0;i<10;i++) {
+				my p = planet[i];
+				if(Math.abs(p[0]-(mouseX-offSetX)) < 15){
+						if(Math.abs(p[1]-(mouseY-offSetY)) < 15){
+							select_planet(i); selected=true;swirlie.visible=true;
+							console.log("planet " + i + " chosen");
+						} }
+			}
 			if(selected==false) { deselect(); }
 
 			PlanetX = mouseX-offSetX;
@@ -426,6 +426,7 @@ void draw(){
 				drawHalo(x,y,destx,desty,ship[selected_ship][1])
 				drawShip(x,y,selected_ship, true);
 			}
+			
 			swirlie.moveTo(offSetX+PlanetX,offSetY+PlanetY);
 			swirlie.redraw();
 			var i=0;
