@@ -11,7 +11,7 @@ dragging = false;
 viewscale = 2;
 overview=false;
 
-
+//Name, speed, owner
 ship = [["Explorer", 10, 1]];
 shipPos = [1,2,3,4,5,6,7,8,9,10];
 planet=[1,2,3,4,5,6,7,8,9,10];
@@ -40,15 +40,15 @@ function makePlanets () {
 }
 
 function makeShips () {
-for(i=0;i<10;i++) {
-		//PositionX, PositionY, owner, shipname
-		shipPos[i] = [Math.random()*xmax, Math.random()*ymax, Math.random()*xmax, Math.random()*ymax ];
-		ship[i] = [ nextShip(),int(Math.random()*4)];
-}
+	for(i=0;i<10;i++) {
+			//PositionX, PositionY, owner, shipname
+			shipPos[i] = [Math.random()*xmax, Math.random()*ymax, Math.random()*xmax, Math.random()*ymax ];
+			ship[i] = [ nextShip(),int(Math.random()*4)];
+	}
 }
 
-//Name, speed, owner
-selected_ship = 0;
+
+selected_ship = -1;
 HandleBox handlebox;
 
 void setup(){  
@@ -98,12 +98,13 @@ void mouseClicked() {
 	} else {
 		console.log("mouseclick at "+mouseX + "," + mouseY);
 		var selected=false;
-		deselect();
+		//deselect();
 		
 			for(i=0;i<10;i++) {
 				my p = planet[i];
 				if(Math.abs(p[0]-(mouseX-offSetX)) < 15){
 						if(Math.abs(p[1]-(mouseY-offSetY)) < 15){
+						
 							select_planet(i); selected=true;swirlie.visible=true;
 							console.log("planet " + i + " chosen");
 						} }
@@ -112,14 +113,19 @@ void mouseClicked() {
 
 			PlanetX = mouseX-offSetX;
 			PlanetY = mouseY-offSetY;
-			selected_ship = -1;
+			//selected_ship = -1;
 			//Currently ship selection is disabled
 			for(i=0;i<10;i++)
 					{
 						my ship = shipPos[i];
 						if(Math.abs(ship[0]-(mouseX-offSetX)) < 15){
 								if(Math.abs(ship[1]-(mouseY-offSetY)) < 15){
-									selected_ship=i; selected=true;console.log("ship " + i + " chosen");} } }
+									if (selected_ship==i) {
+											selected_ship=-1;
+											console.log("ship " + i + " deselected");
+										} else {
+											selected_ship=i; selected=true;console.log("ship " + i + " chosen");
+										} } } }
 									
 			//if((selected==false)&&(dragging==false)) { toggleOverview();}
 	}
@@ -183,6 +189,7 @@ class Swirlie
 	float my[] = new float[num];
 	booleon overrideColours = true;
 	boolean visible = false;
+	int owner = 0;
 
 	float r=20;
 	// Angle and angular velocity, accleration
@@ -202,27 +209,30 @@ class Swirlie
 
 	void redraw()
 	{
-	if(visible) {
-		if(overrideColours){
-			fill(255);
-			stroke(255);
-		}
-		// Reads throught the entire array
-		// and shifts the values to the left
-		for(int i=1; i<num; i++) {
-			mx[i-1] = mx[i];
-			my[i-1] = my[i];
-		} 
-		// Convert polar to cartesian
-		float dx = r * cos(theta);
-		float dy = r * sin(theta);
-		theta += theta_vel;
-		// Add the new values to the end of the array
-		mx[num-1] = dx+x;
-		my[num-1] = dy+y;
-		for(int i=0; i<num; i++) {
-			ellipse(mx[i], my[i], i/2/2, i/2/2);
-		}
+		if(visible) {
+			drawHalo(x,y,x,y,owner);
+			if (true) {
+				if(overrideColours){
+					fill(255);
+					stroke(255);
+				}
+				// Reads throught the entire array
+				// and shifts the values to the left
+				for(int i=1; i<num; i++) {
+					mx[i-1] = mx[i];
+					my[i-1] = my[i];
+				} 
+				// Convert polar to cartesian
+				float dx = r * cos(theta);
+				float dy = r * sin(theta);
+				theta += theta_vel;
+				// Add the new values to the end of the array
+				mx[num-1] = dx+x;
+				my[num-1] = dy+y;
+				for(int i=0; i<num; i++) {
+					ellipse(mx[i], my[i], i/2/2, i/2/2);
+				}
+			}
 		}
 	}
 }
@@ -407,7 +417,7 @@ void draw(){
 		scale(viewscale/2);
 		
 		//The default ship bounces from planet to planet
-		if (true) {  // or "if (focused == true)"
+		
 
 			if(closeTo(X,Y,PlanetX,PlanetY, 30)){
 				//Pick a new planet
@@ -434,6 +444,7 @@ void draw(){
 				var pdata = planet[i];
 				drawStar(offSetX+pdata[0],offSetY+pdata[1],pdata[3], pdata[2]);
 			}
+			
 			var ratio = min(Math.abs(X-PlanetX)/Math.abs(Y-PlanetY), 10);
 			var inv_ratio = min(10, 1/ratio);
 			X=X+-ratio*(X-PlanetX)/Math.abs(X-PlanetX);
@@ -456,27 +467,20 @@ void draw(){
 				var inv_ratio = min(10, 1/ratio)/10.0;
 				shipPos[i][0]=xx+-ratio*(xx-destx)/Math.abs(xx-destx);
 				shipPos[i][1]=yy+-inv_ratio*(yy-desty)/Math.abs(yy-desty);
+				
+				if (keyPressed){
+					drawArrow(offSetX+shipPos[i][0],offSetX+shipPos[i][1],shipPos[i][2],shipPos[i][3], 1, "250");
+				}
+				
 				drawShip(offSetX+shipPos[i][0],offSetY+shipPos[i][1],i);
 			}
 			
-			if (swirlie.selected) {
-				for (i=0;i<resources.length;i++) {
-					console.log(swirlie.selected);
-					console.log(i);
-					handlebox.setBar(i, int(resources[swirlie.selected][i]));
-				}
-				handlebox.setPos(swirlie.x+offSetX, swirlie.y+offSetY);
-				handlebox.redraw();
-			}
+
 		
 
 			//if(X>200 || Y>200){X=20;Y=20;playSound();}
 	
 
-		} else {
-			line(0, 0, 100, 100);
-			line(100, 0, 0, 100);
-		}
 		popMatrix();
 	}
 
@@ -492,7 +496,7 @@ void drawText(astring, xpos, ypos){
 void drawShip(x,y,shipnum, showDetails)
 	{
 		my playerColour = player[ship[shipnum][1]][1];
-		console.log("Drawing ship number ", shipnum);
+		//console.log("Drawing ship number ", shipnum);
 		pushMatrix();
 		//deltax = 1*sign(destx-x);
 		//deltay = 1*sign(desty-y);
