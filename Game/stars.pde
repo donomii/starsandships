@@ -427,33 +427,40 @@ void draw(){
 			}
 		
 
+//Draw the selected ship halo
 			if(selected_ship>-1){
 				my x = offSetX+shipPos[selected_ship][0];
-				my y =offSetY+shipPos[selected_ship][1];
+				my y = offSetY+shipPos[selected_ship][1];
 				my destx = offSetX+PlanetX;
 				my desty = offSetY+PlanetY;
 				//drawArrow(x,y,destx,desty, 1, "250");
 				drawHalo(x,y,destx,desty,ship[selected_ship][1])
-				drawShip(x,y,selected_ship, true);
+				//drawShip(x,y,selected_ship, true);
 			}
 			
+			//Draw the star halo
 			swirlie.moveTo(offSetX+PlanetX,offSetY+PlanetY);
 			swirlie.redraw();
+			
+			//Draw all stars
 			var i=0;
 			for(i=0;i<10;i++) {
 				var pdata = planet[i];
 				drawStar(offSetX+pdata[0],offSetY+pdata[1],pdata[3], pdata[2]);
 			}
 			
+			//Special selected ship movement
+			if (false) {
+			//Move ship by a small amount
 			var ratio = min(Math.abs(X-PlanetX)/Math.abs(Y-PlanetY), 10);
 			var inv_ratio = min(10, 1/ratio);
 			X=X+-ratio*(X-PlanetX)/Math.abs(X-PlanetX);
 			Y=Y+-inv_ratio*(Y-PlanetY)/Math.abs(Y-PlanetY);
 			drawShip(offSetX+X,offSetY+Y,0, false );
-
-			for(i=0;i<10;i++) {
-				var xx =shipPos[i][0];
-				var yy =shipPos[i][1];
+}
+			for(i=0;i<shipPos.length;i++) {
+				var xx = shipPos[i][0];
+				var yy = shipPos[i][1];
 				var destx =shipPos[i][2];
 				var desty =shipPos[i][3];
 				if(closeTo(xx,yy,destx,desty, 30)){
@@ -470,6 +477,7 @@ void draw(){
 				
 				if (keyPressed){
 					drawArrow(offSetX+shipPos[i][0],offSetX+shipPos[i][1],shipPos[i][2],shipPos[i][3], 1, "250");
+					drawHalo(offSetX+shipPos[i][0],offSetX+shipPos[i][1],destx,desty,ship[i][1])
 				}
 				
 				drawShip(offSetX+shipPos[i][0],offSetY+shipPos[i][1],i);
