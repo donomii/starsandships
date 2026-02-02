@@ -8,6 +8,7 @@ Stars and Ships is a web-based space strategy prototype where users navigate a 2
 ### 2.1. Window / Canvas
 - **Entry**: The game starts immediately upon loading the web page.
 - **Splash Screen**: A startup image (`splashimg`) is displayed initially. Clicking it (`onClick`) calls `doStartup()` which hides the image and reveals the game canvas (`#sketch`).
+- **Responsive Layout**: The canvas automatically resizes to fill the browser window. The game world scales dynamically (`width * 8`, `height * 4`) to accommodate different screen sizes.
 - **Mobile optimization**: On mobile devices, the address bar is hidden via `window.scrollTo(0,1)`.
 
 ### 2.2. Mouse / Touch Controls
@@ -25,13 +26,13 @@ The following interactions are handled within `stars.pde`:
         - If deselected, console logs "ship [i] deselected".
     - **Move Target**: If no object is clicked:
         - Deselects current selection (`swirlie` and `handlebox` hidden).
-        - Sets the global `PlanetX` and `PlanetY` (target coordinates) to the mouse position.
+        - Sets the global `PlanetX` and `PlanetY` (target coordinates) to the mouse position (adjusted for scale).
 - **Right Click**
     - **Toggle View**: Toggles `overview` mode.
-        - **Normal View**: Scale 2.0, Offset centered on mouse.
-        - **Overview**: Scale 0.5, Offset (0,0).
+        - **Normal View**: Scale 2.0 (Effective 1.0). Zooms in to center the world coordinate that was under the mouse cursor.
+        - **Overview**: Scale 0.5 (Effective 0.25). Resets offset to (0,0) to show the full map.
 - **Drag (Pan)**
-    - **Map Movement**: Dragging the mouse updates the global offset (`offSetX`, `offSetY`) by the delta of mouse movement.
+    - **Map Movement**: Dragging the mouse updates the global offset (`offSetX`, `offSetY`) by the delta of mouse movement, adjusted for the current view scale.
     - **Threshold**: Dragging is only registered if the total movement (`deltaX + deltaY`) exceeds 5 pixels.
 
 ### 2.3. Keyboard Controls
@@ -117,8 +118,10 @@ A single bar within the `HandleBox`.
 ### 4.1. Initialization (`setup` / `makePlanets` / `makeShips`)
 Pseudocode:
 ```
-Set canvas size and framerate
+Set framerate to 30
 Initialize player array
+Get Canvas Dimensions (dynamic)
+Set World Bounds (xmax, ymax) based on Canvas
 FOR i = 0 TO 9:
     res = [5 random floats]
     planets[i] = NEW Planet(randomX, randomY, randomOwner, nextPlanetName(), res)
@@ -164,6 +167,12 @@ Draw Resource Bars (if visible)
 ```
 
 ## 5. File Formats & External Files
+
+### Backend
+-   **File**: `gameserver.go`
+-   **Function**: A simple HTTP file server listening on port 80.
+-   **Endpoint**: Serves the `Game/` directory at the root `/`.
+-   **Caching**: configured to send `Cache-Control: no-cache` headers to ensure clients always receive the latest files.
 
 ### 5.1. Images
 The application expects the following images in the same directory:

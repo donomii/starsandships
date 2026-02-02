@@ -50,10 +50,10 @@ HandleBox handlebox;
 
 void setup(){  
 	background(48);
-	size( 320, 460 );  
+	//size( 320, 460 );  
 
 	strokeWeight( 10 );  
-	frameRate( 15 );  
+	frameRate( 30 );  
 	X = width / 2;  
 	Y = height / 2;  
 	nX = X;  
@@ -93,14 +93,18 @@ void mouseClicked() {
 	if (mouseButton == RIGHT) { 
 		toggleOverview();
 	} else {
-		console.log("mouseclick at "+mouseX + "," + mouseY);
+		//Account for view scaling when calculating world coordinates
+		var scaleFactor = viewscale / 2.0;
+		var worldMouseX = mouseX / scaleFactor;
+		var worldMouseY = mouseY / scaleFactor;
+		console.log("mouseclick at "+mouseX + "," + mouseY + " world: " + worldMouseX + "," + worldMouseY);
 		var selected=false;
 		//deselect();
 		
 			for(i=0;i<10;i++) {
 				Planet p = planets[i];
-				if(Math.abs(p.x-(mouseX-offSetX)) < 15){
-						if(Math.abs(p.y-(mouseY-offSetY)) < 15){
+				if(Math.abs(p.x-(worldMouseX-offSetX)) < 15){
+						if(Math.abs(p.y-(worldMouseY-offSetY)) < 15){
 						
 							select_planet(i); selected=true;swirlie.visible=true;
 							console.log("planet " + i + " chosen");
@@ -108,15 +112,15 @@ void mouseClicked() {
 			}
 			if(selected==false) { deselect(); }
 
-			PlanetX = mouseX-offSetX;
-			PlanetY = mouseY-offSetY;
+			PlanetX = worldMouseX-offSetX;
+			PlanetY = worldMouseY-offSetY;
 			//selected_ship = -1;
 			//Currently ship selection is disabled
 			for(i=0;i<10;i++)
 					{
 						Ship ship = ships[i];
-						if(Math.abs(ship.x-(mouseX-offSetX)) < 15){
-								if(Math.abs(ship.y-(mouseY-offSetY)) < 15){
+						if(Math.abs(ship.x-(worldMouseX-offSetX)) < 15){
+								if(Math.abs(ship.y-(worldMouseY-offSetY)) < 15){
 									if (selected_ship==i) {
 											selected_ship=-1;
 											console.log("ship " + i + " deselected");
@@ -131,8 +135,10 @@ void mouseClicked() {
 
 void mouseDragged() 
 {
-	deltaX = mouseX-pmouseX;
-	deltaY = mouseY-pmouseY
+	//Account for view scaling when calculating drag deltas
+	var scaleFactor = viewscale / 2.0;
+	deltaX = (mouseX-pmouseX) / scaleFactor;
+	deltaY = (mouseY-pmouseY) / scaleFactor;
 	offSetX = offSetX+deltaX;
 	offSetY = offSetY+deltaY;
 	if((deltaX+deltaY)>5){dragging = true}
@@ -141,16 +147,25 @@ void mouseDragged()
 
 
 void toggleOverview() {
-	//alert("mouse: " + mouseX + " " + mouseY );
 	if(overview){
-	
-	viewscale=2.0;
-	offSetX=-mouseX*4.0;offSetY=-mouseY*4.0;
+		//Zoom in to the mouse position
+		viewscale=2.0; // Scale 1.0 (viewscale/2)
+		//Current Mouse World Pos (from Overview state where scale was 0.25)
+		//mouseX is screen pos. scaling is 0.25. World = mouseX / 0.25 = mouseX * 4
+		float worldX = mouseX * 4;
+		float worldY = mouseY * 4;
+		
+		//We want worldX to be at the center of the screen (width/2)
+		//Screen = (World + Offset) * Scale
+		//width/2 = (worldX + offSetX) * 1
+		//offSetX = width/2 - worldX
+		offSetX = (width/2) - worldX;
+		offSetY = (height/2) - worldY;
 
 	} else {
-	viewscale=0.5;
-	offSetX=0;offSetY=0;
-			
+		//Zoom out to overview
+		viewscale=0.5; // Scale 0.25
+		offSetX=0;offSetY=0;
 	}
 overview=!overview;
 }
