@@ -7,30 +7,36 @@ Stars and Ships is a web-based space strategy prototype where users navigate a 2
 
 ### 2.1. Window / Canvas
 - **Entry**: The game starts immediately upon loading the web page.
-- **Splash Screen**: A startup image (`splashimg`) is displayed initially. Clicking it (`onClick`) calls `doStartup()` which hides the image and reveals the game canvas (`#sketch`).
+- **Title Screen**: A dynamic "Stars and Ships" title screen is displayed on launch, rendered by `TitleScreen` class in Processing.js. It features animating stars and a "Click to Start" prompt.
 - **Responsive Layout**: The canvas automatically resizes to fill the browser window. The game world scales dynamically (`width * 8`, `height * 4`) to accommodate different screen sizes.
 - **Mobile optimization**: On mobile devices, the address bar is hidden via `window.scrollTo(0,1)`.
 
 ### 2.2. Mouse / Touch Controls
 The following interactions are handled within `stars.pde`:
 
-- **Left Click (Tap)**
-    - **Select Planet**: If the cursor is within 15 pixels of a planet:
-        - The planet index is selected.
-        - A "Swirlie" animation appears around the planet.
-        - The resource `HandleBox` (bar graph) becomes visible.
-        - Console logs "planet [i] chosen".
-    - **Select Ship**: If the cursor is within 15 pixels of a ship:
-        - Toggles selection of that ship.
-        - If selected, console logs "ship [i] chosen".
-        - If deselected, console logs "ship [i] deselected".
-    - **Move Target**: If no object is clicked:
-        - Deselects current selection (`swirlie` and `handlebox` hidden).
-        - Sets the global `PlanetX` and `PlanetY` (target coordinates) to the mouse position (adjusted for scale).
-- **Right Click**
+- **Title Screen**
+    - **Start Game**: Clicking anywhere on the title screen transitions the game state from Title to Game.
+
+- **Game Controls (Left Click / Tap)**
+    - **In Overview Mode**:
+        - Zooms in to the clicked location (switches to Normal View).
+    - **In Normal View**:
+        - **Select Planet**: If the cursor is within 15 pixels of a planet:
+            - The planet index is selected.
+            - A "Swirlie" animation appears around the planet.
+            - The resource `HandleBox` (bar graph) becomes visible.
+            - Console logs "planet [i] chosen".
+        - **Select Ship**: If the cursor is within 15 pixels of a ship:
+            - Toggles selection of that ship.
+            - If selected, console logs "ship [i] chosen".
+            - If deselected, console logs "ship [i] deselected".
+        - **Move Target**: If no object is clicked:
+            - Deselects current selection (`swirlie` and `handlebox` hidden).
+            - Sets the global `PlanetX` and `PlanetY` (target coordinates) to the mouse position (adjusted for scale).
+- **Game Controls (Right Click)**
     - **Toggle View**: Toggles `overview` mode.
-        - **Normal View**: Scale 2.0 (Effective 1.0). Zooms in to center the world coordinate that was under the mouse cursor.
-        - **Overview**: Scale 0.5 (Effective 0.25). Resets offset to (0,0) to show the full map.
+        - **Normal View**: Fixed zoom level (Scale 2.0).
+        - **Overview**: Dynamic scale to fit the entire world world boundaries within the screen.
 - **Drag (Pan)**
     - **Map Movement**: Dragging the mouse updates the global offset (`offSetX`, `offSetY`) by the delta of mouse movement, adjusted for the current view scale.
     - **Threshold**: Dragging is only registered if the total movement (`deltaX + deltaY`) exceeds 5 pixels.
@@ -64,15 +70,22 @@ Encapsulates data for a single ship.
     - `destX`, `destY` (Float): Destination coordinates.
 - **Constructor**: `Ship(String name, int speed, int owner, float x, float y, float destX, float destY)`
 
+#### `TitleScreen`
+Renders the initial title state.
+- **Fields**:
+    - `starsX[]`, `starsY[]` (Float Arrays): Positions for background starfield.
+- **Public Methods**:
+    - `draw()`: Renders the title text, prompt, and animations.
+
 ### 3.2. Global Arrays
 
 #### `planets`
 - **Data Structure**: Array of `Planet` objects.
-- **Size**: 10.
+- **Size**: 20.
 
 #### `ships`
 - **Data Structure**: Array of `Ship` objects.
-- **Size**: 10.
+- **Size**: 20.
 
 #### `player`
 Defines the factions in the game.
@@ -119,10 +132,11 @@ A single bar within the `HandleBox`.
 Pseudocode:
 ```
 Set framerate to 30
+Initialize TitleScreen
 Initialize player array
 Get Canvas Dimensions (dynamic)
 Set World Bounds (xmax, ymax) based on Canvas
-FOR i = 0 TO 9:
+FOR i = 0 TO 19:
     res = [5 random floats]
     planets[i] = NEW Planet(randomX, randomY, randomOwner, nextPlanetName(), res)
     ships[i] = NEW Ship(nextShipName(), speed, randomOwner, randomX, randomY, randomDestX, randomDestY)
@@ -133,37 +147,40 @@ Initialize HandleBox
 ### 4.2. Main Game Loop (`draw`)
 Pseudocode:
 ```
-Clear Screen
-Apply View Scaling (viewscale)
+IF GameState IS TITLE:
+    Call TitleScreen.draw()
+ELSE:
+    Clear Screen
+    Apply View Scaling (viewscale)
 
-// Handle "Camera" Ship
-IF Distance(CameraX, CameraY, TargetX, TargetY) < 30:
-    Select Random Planet P from planets[]
-    TargetX = P.x
-    TargetY = P.y
-
-// Update Ships
-FOR EACH ship in ships:
-    IF Distance(ship.x, ship.y, ship.destX, ship.destY) < 30:
+    // Handle "Camera" Ship
+    IF Distance(CameraX, CameraY, TargetX, TargetY) < 30:
         Select Random Planet P from planets[]
-        ship.destX = P.x
-        ship.destY = P.y
-    
-    // Linear interpolation movement
-    dx = ship.x - ship.destX
-    dy = ship.y - ship.destY
-    ratio = Min(Abs(dx)/Abs(dy), 10.0) / 10.0
-    
-    // Move ship towards destination
-    ship.x += -ratio * Direction(dx)
-    ship.y += -(inverse_ratio) * Direction(dy)
-    
-    DrawShip(ship)
-END FOR
+        TargetX = P.x
+        TargetY = P.y
 
-Draw Swirlie (if visible)
-Draw Planets
-Draw Resource Bars (if visible)
+    // Update Ships
+    FOR EACH ship in ships:
+        IF Distance(ship.x, ship.y, ship.destX, ship.destY) < 30:
+            Select Random Planet P from planets[]
+            ship.destX = P.x
+            ship.destY = P.y
+        
+        // Linear interpolation movement
+        dx = ship.x - ship.destX
+        dy = ship.y - ship.destY
+        ratio = Min(Abs(dx)/Abs(dy), 10.0) / 10.0
+        
+        // Move ship towards destination
+        ship.x += -ratio * Direction(dx)
+        ship.y += -(inverse_ratio) * Direction(dy)
+        
+        DrawShip(ship)
+    END FOR
+
+    Draw Swirlie (if visible)
+    Draw Planets
+    Draw Resource Bars (if visible)
 ```
 
 ## 5. File Formats & External Files
@@ -176,7 +193,6 @@ Draw Resource Bars (if visible)
 
 ### 5.1. Images
 The application expects the following images in the same directory:
-- `startup.png`: Splash screen.
 - `stars_icon.png`, `stars-icon-ipad.png`: iOS icons.
 - `stars.css`: Stylesheet.
 
@@ -185,4 +201,4 @@ The application expects the following images in the same directory:
 - `jquery.js`: DOM manipulation.
 - `stars.js`: Helper functions.
 - `datasets.js`: Data generation helpers (`nextPlanet`, `nextShip`).
-- `Objects.pde`: Class definitions for `Planet` and `Ship`.
+- `Objects.pde`: Class definitions for `Planet`, `Ship`, and `TitleScreen`.
